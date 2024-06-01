@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品管理</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <div id="branding">
+            <h1>产品管理系统</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="main">主页</a></li>
+                <li><a href="product">产品管理</a></li>
+                <li><a href="supplier">供应商管理</a></li>
+                <li><a href="custom">客户管理</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+<div class="container">
+    <div class="main">
+        <h2>查找产品</h2>
+        <form id="searchProductForm">
+            <div class="form-group">
+                <label for="searchID">产品ID</label>
+                <input type="text" id="searchID" name="searchID" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">搜索</button>
+            </div>
+        </form>
+        <h2>添加新产品</h2>
+        <form id="addProductForm">
+            <div class="form-group">
+                <label for="model">产品型号</label>
+                <input type="text" id="model" name="model" required>
+            </div>
+            <div class="form-group">
+                <label for="supID">供应商ID</label>
+                <input type="text" id="supID" name="supID" required>
+            </div>
+            <div class="form-group">
+                <label for="productName">产品名称</label>
+                <input type="text" id="productName" name="productName" required>
+            </div>
+            <div class="form-group">
+                <label for="productPrice">产品价格</label>
+                <input type="text" id="productPrice" name="productPrice" required>
+            </div>
+            <div class="form-group">
+                <label for="productStock">产品库存</label>
+                <input type="text" id="productStock" name="productStock" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">添加</button>
+                <button type="reset">重置</button>
+            </div>
+        </form>
+
+        <h2>编辑产品信息</h2>
+        <form id="editProductForm">
+            <div class="form-group">
+                <label for="editModel">产品型号</label>
+                <input type="text" id="editModel" name="editModel" required>
+            </div>
+            <div class="form-group">
+                <label for="editsupID">供应商ID</label>
+                <input type="text" id="editsupID" name="editsupID" required>
+            </div>
+            <div class="form-group">
+                <label for="editProductName">产品名称</label>
+                <input type="text" id="editProductName" name="editProductName" required>
+            </div>
+            <div class="form-group">
+                <label for="editProductPrice">产品价格</label>
+                <input type="text" id="editProductPrice" name="editProductPrice" required>
+            </div>
+            <div class="form-group">
+                <label for="editProductStock">产品库存</label>
+                <input type="text" id="editProductStock" name="editProductStock" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">保存修改</button>
+                <button type="reset">重置</button>
+            </div>
+        </form>
+        <h2>产品列表</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>型号</th>
+                <th>供应商ID</th>
+                <th>名称</th>
+                <th>价格</th>
+                <th>库存</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="productsTableBody">
+            <!-- 数据行将在此处添加 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    // 页面加载时加载产品列表
+    document.addEventListener('DOMContentLoaded', function() {
+        loadProducts();
+    });
+
+    // 插入产品
+    document.getElementById('addProductForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var model = document.getElementById('model').value;
+        var supID = document.getElementById('supID').value;
+        var productName = document.getElementById('productName').value;
+        var productPrice = document.getElementById('productPrice').value;
+        var productStock = document.getElementById('productStock').value;
+
+        var newProduct = {
+            model: model,
+            supID: supID,
+            productName: productName,
+            productPrice: productPrice,
+            productStock: productStock
+        };
+
+        fetch('/api/product', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newProduct)
+        }).then(response => {
+            if (response.ok) {
+                loadProducts();
+                document.getElementById('addProductForm').reset();
+            } else {
+                alert('添加产品失败');
+            }
+        });
+    });
+
+    // 查找产品
+    document.getElementById('searchProductForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var searchID = document.getElementById('searchID').value;
+
+        fetch(`/api/product/${searchID}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('无法找到该产品');
+                }
+                return response.json();
+            })
+            .then(product => {
+                var tableBody = document.getElementById('productsTableBody');
+                tableBody.innerHTML = '';
+
+                if (product) {
+                    var newRow = document.createElement('tr');
+
+                    var modelCell = document.createElement('td');
+                    modelCell.textContent = product.model;
+                    newRow.appendChild(modelCell);
+
+                    var supIDCell = document.createElement('td');
+                    supIDCell.textContent = product.supID;
+                    newRow.appendChild(supIDCell);
+
+                    var nameCell = document.createElement('td');
+                    nameCell.textContent = product.productName;
+                    newRow.appendChild(nameCell);
+
+                    var priceCell = document.createElement('td');
+                    priceCell.textContent = product.productPrice;
+                    newRow.appendChild(priceCell);
+
+                    var stockCell = document.createElement('td');
+                    stockCell.textContent = product.productStock;
+                    newRow.appendChild(stockCell);
+
+                    var actionCell = document.createElement('td');
+                    newRow.appendChild(actionCell);
+
+                    tableBody.appendChild(newRow);
+                } else {
+                    var noResultRow = document.createElement('tr');
+                    var noResultCell = document.createElement('td');
+                    noResultCell.colSpan = 6;
+                    noResultCell.textContent = "未找到匹配的产品";
+                    noResultCell.classList.add("no-result");
+                    noResultRow.appendChild(noResultCell);
+                    tableBody.appendChild(noResultRow);
+                }
+            })
+            .catch(error => {
+                alert('查找产品时发生错误: ' + error.message);
+            });
+    });
+
+    // 加载产品列表
+    function loadProducts() {
+        fetch('/api/product')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!Array.isArray(data)) {
+                    throw new TypeError('Expected an array but got ' + typeof data);
+                }
+                var tableBody = document.getElementById('productsTableBody');
+                tableBody.innerHTML = '';
+                data.forEach(product => {
+                    var newRow = document.createElement('tr');
+
+                    var modelCell = document.createElement('td');
+                    modelCell.textContent = product.model;
+                    newRow.appendChild(modelCell);
+
+                    var supIDCell = document.createElement('td');
+                    supIDCell.textContent = product.supID;
+                    newRow.appendChild(supIDCell);
+
+                    var nameCell = document.createElement('td');
+                    nameCell.textContent = product.productName;
+                    newRow.appendChild(nameCell);
+
+                    var priceCell = document.createElement('td');
+                    priceCell.textContent = product.productPrice;
+                    newRow.appendChild(priceCell);
+
+                    var stockCell = document.createElement('td');
+                    stockCell.textContent = product.productStock;
+                    newRow.appendChild(stockCell);
+
+                    var actionCell = document.createElement('td');
+                    var deleteButton = document.createElement('button');
+                    deleteButton.textContent = '删除';
+                    deleteButton.onclick = function() {
+                        deleteProduct(product.model);
+                    };
+                    actionCell.appendChild(deleteButton);
+                    newRow.appendChild(actionCell);
+
+                    tableBody.appendChild(newRow);
+
+                    var editButton = document.createElement('button');
+                    editButton.textContent = '修改';
+                    editButton.onclick = function() {
+                        editProduct(product);
+                    };
+                    actionCell.appendChild(editButton);
+
+                    newRow.appendChild(actionCell);
+                    tableBody.appendChild(newRow);
+                });
+            })
+            .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+    // 编辑产品
+    function editProduct(product) {
+        var form = document.getElementById('editProductForm');
+        form.elements.editModel.value = product.model;
+        form.elements.editsupID.value = product.supID;
+        form.elements.editProductName.value = product.productName;
+        form.elements.editProductPrice.value = product.productPrice;
+        form.elements.editProductStock.value = product.productStock;
+    }
+
+    document.getElementById('editProductForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var model = document.getElementById('editModel').value;
+        var supID = document.getElementById('editsupID').value;
+        var productName = document.getElementById('editProductName').value;
+        var productPrice = document.getElementById('editProductPrice').value;
+        var productStock = document.getElementById('editProductStock').value;
+
+        var updatedProduct = {
+            model: model,
+            supID: supID,
+            productName: productName,
+            productPrice: productPrice,
+            productStock: productStock
+        };
+
+        fetch(`/api/product/${model}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedProduct)
+        }).then(response => {
+            if (response.ok) {
+                loadProducts();
+                document.getElementById('editProductForm').reset();
+            } else {
+                alert('修改产品信息失败');
+            }
+        });
+    });
+        // 删除产品
+        function deleteProduct(model) {
+            fetch('/api/product/' + model, {
+                method: 'DELETE'
+            }).then(response => {
+                if (response.ok) {
+                    loadProducts();
+                } else {
+                    alert('删除产品失败');
+                }
+            });
+        }
+</script>
+</body>
+</html>

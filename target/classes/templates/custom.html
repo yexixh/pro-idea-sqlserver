@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户管理</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <div id="branding">
+            <h1>客户管理系统</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="main">主页</a></li>
+                <li><a href="product">产品管理</a></li>
+                <li><a href="supplier">供应商管理</a></li>
+                <li><a href="custom">客户管理</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+<div class="container">
+    <div class="main">
+        <h2>查找客户</h2>
+        <form id="searchCustomerForm">
+            <div class="form-group">
+                <label for="searchID">客户ID</label>
+                <input type="text" id="searchID" name="searchID" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">搜索</button>
+            </div>
+        </form>
+        <h2>添加新客户</h2>
+        <form id="addCustomerForm">
+            <div class="form-group">
+                <label for="customID">客户ID</label>
+                <input type="text" id="customID" name="customID" required>
+            </div>
+            <div class="form-group">
+                <label for="customName">客户名称</label>
+                <input type="text" id="customName" name="customName" required>
+            </div>
+            <div class="form-group">
+                <label for="customAddress">客户地址</label>
+                <input type="text" id="customAddress" name="customAddress" required>
+            </div>
+            <div class="form-group">
+                <label for="customPhone">客户电话</label>
+                <input type="text" id="customPhone" name="customPhone" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">添加</button>
+                <button type="reset">重置</button>
+            </div>
+        </form>
+
+        <h2>编辑客户信息</h2>
+        <form id="editCustomerForm">
+            <div class="form-group">
+                <label for="editCustomID">客户ID</label>
+                <input type="text" id="editCustomID" name="editCustomID" readonly>
+            </div>
+            <div class="form-group">
+                <label for="editCustomName">客户名称</label>
+                <input type="text" id="editCustomName" name="editCustomName" required>
+            </div>
+            <div class="form-group">
+                <label for="editCustomAddress">客户地址</label>
+                <input type="text" id="editCustomAddress" name="editCustomAddress" required>
+            </div>
+            <div class="form-group">
+                <label for="editCustomPhone">客户电话</label>
+                <input type="text" id="editCustomPhone" name="editCustomPhone" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">保存修改</button>
+                <button type="reset">重置</button>
+            </div>
+        </form>
+
+        <h2>客户列表</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>名称</th>
+                <th>地址</th>
+                <th>电话</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="customersTableBody">
+            <!-- 数据行将在此处添加 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    // 页面加载时加载客户列表
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCustomers();
+    });
+
+    // 插入客户
+    document.getElementById('addCustomerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var customID = document.getElementById('customID').value;
+        var customName = document.getElementById('customName').value;
+        var customAddress = document.getElementById('customAddress').value;
+        var customPhone = document.getElementById('customPhone').value;
+
+        var newCustomer = {
+            customID: customID,
+            customName: customName,
+            customAddress: customAddress,
+            customPhone: customPhone
+        };
+
+        fetch('/api/customer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newCustomer)
+        }).then(response => {
+            if (response.ok) {
+                loadCustomers();
+                document.getElementById('addCustomerForm').reset();
+            } else {
+                alert('添加客户失败');
+            }
+        });
+    });
+
+    // 查找客户
+    document.getElementById('searchCustomerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var searchID = document.getElementById('searchID').value;
+
+        fetch(`/api/customer/${searchID}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('无法找到该客户');
+                }
+                return response.json();
+            })
+            .then(customer => {
+                var tableBody = document.getElementById('customersTableBody');
+                tableBody.innerHTML = '';
+
+                if (customer) {
+                    var newRow = document.createElement('tr');
+
+                    var idCell = document.createElement('td');
+                    idCell.textContent = customer.customID;
+                    newRow.appendChild(idCell);
+
+                    var nameCell = document.createElement('td');
+                    nameCell.textContent = customer.customName;
+                    newRow.appendChild(nameCell);
+
+                    var addressCell = document.createElement('td');
+                    addressCell.textContent = customer.customAddress;
+                    newRow.appendChild(addressCell);
+
+                    var phoneCell = document.createElement('td');
+                    phoneCell.textContent = customer.customPhone;
+                    newRow.appendChild(phoneCell);
+
+                    var actionCell = document.createElement('td');
+                    newRow.appendChild(actionCell);
+
+                    tableBody.appendChild(newRow);
+                } else {
+                    var noResultRow = document.createElement('tr');
+                    var noResultCell = document.createElement('td');
+                    noResultCell.colSpan = 5;
+                    noResultCell.textContent = "未找到匹配的客户";
+                    noResultCell.classList.add("no-result");
+                    noResultRow.appendChild(noResultCell);
+                    tableBody.appendChild(noResultRow);
+                }
+            })
+            .catch(error => {
+                alert('查找客户时发生错误: ' + error.message);
+            });
+    });
+
+    // 加载客户列表
+    function loadCustomers() {
+        fetch('/api/customer')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!Array.isArray(data)) {
+                    throw new TypeError('Expected an array but got ' + typeof data);
+                }
+                var tableBody = document.getElementById('customersTableBody');
+                tableBody.innerHTML = '';
+                data.forEach(customer => {
+                    var newRow = document.createElement('tr');
+
+                    var idCell = document.createElement('td');
+                    idCell.textContent = customer.customID;
+                    newRow.appendChild(idCell);
+
+                    var nameCell = document.createElement('td');
+                    nameCell.textContent = customer.customName;
+                    newRow.appendChild(nameCell);
+
+                    var addressCell = document.createElement('td');
+                    addressCell.textContent = customer.customAddress;
+                    newRow.appendChild(addressCell);
+
+                    var phoneCell = document.createElement('td');
+                    phoneCell.textContent = customer.customPhone;
+                    newRow.appendChild(phoneCell);
+
+                    var actionCell = document.createElement('td');
+
+                    var deleteButton = document.createElement('button');
+                    deleteButton.textContent = '删除';
+                    deleteButton.onclick = function() {
+                        deleteCustomer(customer.customID);
+                    };
+                    actionCell.appendChild(deleteButton);
+
+                    var editButton = document.createElement('button');
+                    editButton.textContent = '修改';
+                    editButton.onclick = function() {
+                        editCustomer(customer);
+                    };
+                    actionCell.appendChild(editButton);
+
+                    newRow.appendChild(actionCell);
+                    tableBody.appendChild(newRow);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    // 修改客户信息
+    function editCustomer(customer) {
+        var form = document.getElementById('editCustomerForm');
+        form.elements.editCustomID.value = customer.customID;
+        form.elements.editCustomName.value = customer.customName;
+        form.elements.editCustomAddress.value = customer.customAddress;
+        form.elements.editCustomPhone.value = customer.customPhone;
+    }
+
+    // 提交修改客户信息
+    document.getElementById('editCustomerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var customID = document.getElementById('editCustomID').value;
+        var customName = document.getElementById('editCustomName').value;
+        var customAddress = document.getElementById('editCustomAddress').value;
+        var customPhone = document.getElementById('editCustomPhone').value;
+
+        var updatedCustomer = {
+            customID: customID,
+            customName: customName,
+            customAddress: customAddress,
+            customPhone: customPhone
+        };
+
+        fetch(`/api/customer/${customID}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedCustomer)
+        }).then(response => {
+            if (response.ok) {
+                loadCustomers();
+                document.getElementById('editCustomerForm').reset();
+            } else {
+                alert('修改客户信息失败');
+            }
+        });
+    });
+
+    // 删除客户
+    function deleteCustomer(customID) {
+        fetch(`/api/customer/${customID}`, {
+            method: 'DELETE'
+        }).then(response => {
+            if (response.ok) {
+                loadCustomers();
+            } else {
+                alert('删除客户失败');
+            }
+        });
+    }
+</script>
+</body>
+</html>

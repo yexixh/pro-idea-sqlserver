@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家具城数据库管理</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <div id="branding">
+            <h1>家具城数据库管理系统</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="main">主页</a></li>
+                <li><a href="product">产品管理</a></li>
+                <li><a href="supplier">供应商管理</a></li>
+                <li><a href="custom">客户管理</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+<div class="container">
+    <div class="main">
+        <h2>添加新记录</h2>
+        <form id="addRecordForm">
+            <div class="form-group">
+                <label for="type">选择类型</label>
+                <select id="type" name="type">
+                    <option value="Pro">产品</option>
+                    <option value="Sup">供应商</option>
+                    <option value="Cus">客户</option>
+                    <option value="outpro">出货</option>
+                    <option value="Inpro">进货</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="field1">字段1</label>
+                <input type="text" id="field1" name="field1">
+            </div>
+            <div class="form-group">
+                <label for="field2">字段2</label>
+                <input type="text" id="field2" name="field2">
+            </div>
+            <div class="form-group">
+                <button type="submit">添加</button>
+            </div>
+        </form>
+        <h2>记录列表</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>类型</th>
+                <th>字段1</th>
+                <th>字段2</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="recordsTableBody">
+            <!-- 数据行将在此处添加 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    document.getElementById('addRecordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var type = document.getElementById('type').value;
+        var field1 = document.getElementById('field1').value;
+        var field2 = document.getElementById('field2').value;
+
+        var tableBody = document.getElementById('recordsTableBody');
+        var newRow = document.createElement('tr');
+
+        var typeCell = document.createElement('td');
+        typeCell.textContent = type;
+        newRow.appendChild(typeCell);
+
+        var field1Cell = document.createElement('td');
+        field1Cell.textContent = field1;
+        newRow.appendChild(field1Cell);
+
+        var field2Cell = document.createElement('td');
+        field2Cell.textContent = field2;
+        newRow.appendChild(field2Cell);
+
+        var actionCell = document.createElement('td');
+        var deleteButton = document.createElement('button');
+        deleteButton.textContent = '删除';
+        deleteButton.onclick = function() {
+            tableBody.removeChild(newRow);
+        };
+        actionCell.appendChild(deleteButton);
+        newRow.appendChild(actionCell);
+
+        tableBody.appendChild(newRow);
+
+        document.getElementById('addRecordForm').reset();
+    });
+</script>
+</body>
+</html>

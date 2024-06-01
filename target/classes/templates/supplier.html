@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>供应商管理</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <div id="branding">
+            <h1>供应商管理系统</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="main">主页</a></li>
+                <li><a href="product">产品管理</a></li>
+                <li><a href="supplier">供应商管理</a></li>
+                <li><a href="custom">客户管理</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+<div class="container">
+    <div class="main">
+        <h2>查找供应商</h2>
+        <form id="searchSupplierForm">
+            <div class="form-group">
+                <label for="searchID">供应商ID</label>
+                <input type="text" id="searchID" name="searchID" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">搜索</button>
+            </div>
+        </form>
+        <h2>添加新供应商</h2>
+        <form id="addSupplierForm">
+            <div class="form-group">
+                <label for="supID">供应商</label>
+                <input type="text" id="supID" name="supID" required>
+            </div>
+            <div class="form-group">
+                <label for="supAddress">供应商地址</label>
+                <input type="text" id="supAddress" name="supAddress" required>
+            </div>
+            <div class="form-group">
+                <label for="supName">供应商名称</label>
+                <input type="text" id="supName" name="supName" required>
+            </div>
+            <div class="form-group">
+                <label for="supPerson">供应商联系人</label>
+                <input type="text" id="supPerson" name="supPerson" required>
+            </div>
+            <div class="form-group">
+                <label for="supPhone">供应商联系电话</label>
+                <input type="text" id="supPhone" name="supPhone" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">添加</button>
+                <button type="reset">重置</button>
+            </div>
+        </form>
+
+        <h2>编辑供应商信息</h2>
+        <form id="editSupplierForm">
+            <div class="form-group">
+                <label for="editsupID">供应商</label>
+                <input type="text" id="editsupID" name="editsupID" required>
+            </div>
+            <div class="form-group">
+                <label for="editSupAddress">供应商地址</label>
+                <input type="text" id="editSupAddress" name="editSupAddress" required>
+            </div>
+            <div class="form-group">
+                <label for="editSupName">供应商名称</label>
+                <input type="text" id="editSupName" name="editSupName" required>
+            </div>
+            <div class="form-group">
+                <label for="editSupPerson">供应商联系人</label>
+                <input type="text" id="editSupPerson" name="editSupPerson" required>
+            </div>
+            <div class="form-group">
+                <label for="editSupPhone">供应商联系电话</label>
+                <input type="text" id="editSupPhone" name="editSupPhone" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">保存修改</button>
+                <button type="reset">重置</button>
+            </div>
+        </form>
+        <h2>供应商列表</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>供应商</th>
+                <th>供应商地址</th>
+                <th>供应商名称</th>
+                <th>供应商联系人</th>
+                <th>供应商联系电话</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="suppliersTableBody">
+            <!-- 数据行将在此处添加 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    // 页面加载时加载供应商列表
+    document.addEventListener('DOMContentLoaded', function() {
+        loadSuppliers();
+    });
+
+    // 插入供应商
+    document.getElementById('addSupplierForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var sup = document.getElementById('sup').value;
+        var supAddress = document.getElementById('supAddress').value;
+        var supName = document.getElementById('supName').value;
+        var supPerson = document.getElementById('supPerson').value;
+        var supPhone = document.getElementById('supPhone').value;
+
+        var newSupplier = {
+            sup: supID,
+            supAddress: supAddress,
+            supName: supName,
+            supPerson: supPerson,
+            supPhone: supPhone
+        };
+
+        fetch('/api/supplier', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newSupplier)
+        }).then(response => {
+            if (response.ok) {
+                loadSuppliers();
+                document.getElementById('addSupplierForm').reset();
+            } else {
+                alert('添加供应商失败');
+            }
+        });
+    });
+
+    // 查找供应商
+    document.getElementById('searchSupplierForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var searchID = document.getElementById('searchID').value;
+
+        fetch(`/api/supplier/${searchID}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('无法找到该供应商');
+                }
+                return response.json();
+            })
+            .then(supplier => {
+                var tableBody = document.getElementById('suppliersTableBody');
+                tableBody.innerHTML = '';
+
+                if (supplier) {
+                    var newRow = document.createElement('tr');
+
+                    var supCell = document.createElement('td');
+                    supCell.textContent = supplier.supID;
+                    newRow.appendChild(supCell);
+
+                    var supAddressCell = document.createElement('td');
+                    supAddressCell.textContent = supplier.supAddress;
+                    newRow.appendChild(supAddressCell);
+
+                    var supNameCell = document.createElement('td');
+                    supNameCell.textContent = supplier.supName;
+                    newRow.appendChild(supNameCell);
+
+                    var supPersonCell = document.createElement('td');
+                    supPersonCell.textContent = supplier.supPerson;
+                    newRow.appendChild(supPersonCell);
+
+                    var supPhoneCell = document.createElement('td');
+                    supPhoneCell.textContent = supplier.supPhone;
+                    newRow.appendChild(supPhoneCell);
+
+                    var actionCell = document.createElement('td');
+                    newRow.appendChild(actionCell);
+
+                    tableBody.appendChild(newRow);
+                } else {
+                    var noResultRow = document.createElement('tr');
+                    var noResultCell = document.createElement('td');
+                    noResultCell.colSpan = 6;
+                    noResultCell.textContent = "未找到匹配的供应商";
+                    noResultCell.classList.add("no-result");
+                    noResultRow.appendChild(noResultCell);
+                    tableBody.appendChild(noResultRow);
+                }
+            })
+            .catch(error => {
+                alert('查找供应商时发生错误: ' + error.message);
+            });
+    });
+
+    // 加载供应商列表
+    function loadSuppliers() {
+        fetch('/api/supplier')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!Array.isArray(data)) {
+                    throw new TypeError('Expected an array but got ' + typeof data);
+                }
+                var tableBody = document.getElementById('suppliersTableBody');
+                tableBody.innerHTML = '';
+                data.forEach(supplier => {
+                    var newRow = document.createElement('tr');
+
+                    var supCell = document.createElement('td');
+                    supCell.textContent = supplier.supID;
+                    newRow.appendChild(supCell);
+
+                    var supAddressCell = document.createElement('td');
+                    supAddressCell.textContent = supplier.supAddress;
+                    newRow.appendChild(supAddressCell);
+
+                    var supNameCell = document.createElement('td');
+                    supNameCell.textContent = supplier.supName;
+                    newRow.appendChild(supNameCell);
+
+                    var supPersonCell = document.createElement('td');
+                    supPersonCell.textContent = supplier.supPerson;
+                    newRow.appendChild(supPersonCell);
+
+                    var supPhoneCell = document.createElement('td');
+                    supPhoneCell.textContent = supplier.supPhone;
+                    newRow.appendChild(supPhoneCell);
+
+                    var actionCell = document.createElement('td');
+                    var deleteButton = document.createElement('button');
+                    deleteButton.textContent = '删除';
+                    deleteButton.onclick = function() {
+                        deleteSupplier(supplier.supID);
+                    };
+                    actionCell.appendChild(deleteButton);
+                    newRow.appendChild(actionCell);
+
+                    tableBody.appendChild(newRow);
+
+                    var editButton = document.createElement('button');
+                    editButton.textContent = '修改';
+                    editButton.onclick = function() {
+                        editSupplier(supplier);
+                    };
+                    actionCell.appendChild(editButton);
+
+                    newRow.appendChild(actionCell);
+                    tableBody.appendChild(newRow);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    // 编辑供应商
+    function editSupplier(supplier) {
+        var form = document.getElementById('editSupplierForm');
+        form.elements.editsupID.value = supplier.supID;
+        form.elements.editSupAddress.value = supplier.supAddress;
+        form.elements.editSupName.value = supplier.supName;
+        form.elements.editSupPerson.value = supplier.supPerson;
+        form.elements.editSupPhone.value = supplier.supPhone;
+    }
+
+    document.getElementById('editSupplierForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var supID = document.getElementById('editsupID').value;
+        var supAddress = document.getElementById('editSupAddress').value;
+        var supName = document.getElementById('editSupName').value;
+        var supPerson = document.getElementById('editSupPerson').value;
+        var supPhone = document.getElementById('editSupPhone').value;
+
+        var updatedSupplier = {
+            sup: supID,
+            supAddress: supAddress,
+            supName: supName,
+            supPerson: supPerson,
+            supPhone: supPhone
+        };
+
+        fetch(`/api/supplier/${supID}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedSupplier)
+        }).then(response => {
+            if (response.ok) {
+                loadSuppliers();
+                document.getElementById('editSupplierForm').reset();
+            } else {
+                alert('修改供应商信息失败');
+            }
+        });
+    });
+
+    // 删除供应商
+    function deleteSupplier(supID) {
+        fetch('/api/supplier/' + supID, {
+            method: 'DELETE'
+        }).then(response => {
+            if (response.ok) {
+                loadSuppliers();
+            } else {
+                alert('删除供应商失败');
+            }
+        });
+    }
+</script>
+</body>
+</html>

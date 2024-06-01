@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DdlMappings">
+    <mapping uuid="4138cea5-be41-4811-a8a6-5ec7387cf58e" name="Furnituresale@localhost Mapping">
+      <data-sources db="45293046-9285-46af-a9cb-e2e45f0879a7" />
+      <scope>
+        <node kind="database" qname="Furnituresale">
+          <node kind="schema" qname="dbo" />
+        </node>
+      </scope>
+    </mapping>
+  </component>
+</project>

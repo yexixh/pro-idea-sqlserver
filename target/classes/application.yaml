@@ -1,0 +1,33 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    url: jdbc:sqlserver://localhost:1433;DatabaseName=Furnituresale;Encrypt=false
+    username: adminSale
+    password: 123456
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+        naming:
+          physical-strategy: EJB3NamingStrategy #无效
+
+      ddl-auto: none
+    #       create 删表重新创建   update 更新表
+    show-sql: true
+
+  #配置thymeleaf
+  thymeleaf:
+    prefix: classpath:/templates/
+    check-template-location: true
+    cache: false
+    suffix: .html
+    encoding: UTF-8
+    mode: HTML
+
+  #配置语言
+  messages:
+      basename: i18n.login
